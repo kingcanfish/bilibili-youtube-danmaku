@@ -448,8 +448,8 @@ class DanmakuEngine {
             track.items = [];
         });
 
-        // 清空舞台
-        this.stage.innerHTML = '';
+        // 清空舞台 - 使用 textContent 避免 innerHTML 安全问题
+        this.stage.textContent = '';
     }
 
     // 重置所有弹幕的发射状态

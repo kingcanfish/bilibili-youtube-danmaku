@@ -356,16 +356,27 @@ function displayDanmakuList(danmakus) {
             ? danmakus.filter((d) => d.text.toLowerCase().includes(filterText.toLowerCase()))
             : danmakus;
 
-        list.innerHTML = filtered
-            .map(
-                (danmaku) => `
-            <div class="danmaku-item" data-time="${danmaku.time}">
-                <span class="danmaku-time">${formatTime(danmaku.time)}</span>
-                <span class="danmaku-text">${danmaku.text}</span>
-            </div>
-        `
-            )
-            .join('');
+        // 清空列表
+        list.textContent = '';
+
+        // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+        filtered.forEach((danmaku) => {
+            const item = document.createElement('div');
+            item.className = 'danmaku-item';
+            item.dataset.time = danmaku.time;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'danmaku-time';
+            timeSpan.textContent = formatTime(danmaku.time);
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'danmaku-text';
+            textSpan.textContent = danmaku.text;
+
+            item.appendChild(timeSpan);
+            item.appendChild(textSpan);
+            list.appendChild(item);
+        });
     };
 
     renderList();
@@ -517,24 +528,50 @@ function displayUserSearchResults(users, pageInfo) {
     searchResults.style.display = 'block';
     searchStatus.textContent = `找到${users.length}个可能的UP主，请选择：`;
 
-    searchList.innerHTML = users
-        .map(
-            (user) => `
-        <div class="search-item user-item" data-mid="${user.mid}" data-space-url="${user.spaceUrl}">
-            <div class="search-item-cover">
-                <img src="${user.face.startsWith('https:') ? user.face : 'https:' + user.face}" alt="${user.uname}" onerror="this.style.display='none'">
-            </div>
-            <div class="search-item-content">
-                <div class="search-item-title">${user.uname}</div>
-                <div class="search-item-info">
-                    ${user.fans > 10000 ? (user.fans / 10000).toFixed(1) + '万' : user.fans} 粉丝 · ${user.videos} 个视频
-                </div>
-                ${user.usign ? `<div class="search-item-info">${user.usign}</div>` : ''}
-            </div>
-        </div>
-    `
-        )
-        .join('');
+    // 清空列表
+    searchList.textContent = '';
+
+    // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+    users.forEach((user) => {
+        const item = document.createElement('div');
+        item.className = 'search-item user-item';
+        item.dataset.mid = user.mid;
+        item.dataset.spaceUrl = user.spaceUrl;
+
+        const cover = document.createElement('div');
+        cover.className = 'search-item-cover';
+        const img = document.createElement('img');
+        img.src = user.face.startsWith('https:') ? user.face : 'https:' + user.face;
+        img.alt = user.uname;
+        img.onerror = function() { this.style.display = 'none'; };
+        cover.appendChild(img);
+
+        const content = document.createElement('div');
+        content.className = 'search-item-content';
+
+        const title = document.createElement('div');
+        title.className = 'search-item-title';
+        title.textContent = user.uname;
+
+        const info = document.createElement('div');
+        info.className = 'search-item-info';
+        const fansText = user.fans > 10000 ? (user.fans / 10000).toFixed(1) + '万' : user.fans;
+        info.textContent = `${fansText} 粉丝 · ${user.videos} 个视频`;
+
+        content.appendChild(title);
+        content.appendChild(info);
+
+        if (user.usign) {
+            const sign = document.createElement('div');
+            sign.className = 'search-item-info';
+            sign.textContent = user.usign;
+            content.appendChild(sign);
+        }
+
+        item.appendChild(cover);
+        item.appendChild(content);
+        searchList.appendChild(item);
+    });
 
     // 绑定点击事件
     searchList.querySelectorAll('.user-item').forEach((item) => {
@@ -578,21 +615,43 @@ function displayVideoSearchResults(videos, youtubeVideoId) {
     searchResults.style.display = 'block';
     searchStatus.textContent = `找到${videos.length}个相关视频：`;
 
-    searchList.innerHTML = videos
-        .map(
-            (video) => `
-        <div class="search-item video-item" data-bvid="${video.bvid}" data-mid="${video.mid}" data-author="${video.author}">
-            <div class="search-item-cover">
-                <img src="${video.pic}" alt="${video.title}" onerror="this.style.display='none'">
-            </div>
-            <div class="search-item-content">
-                <div class="search-item-title">${video.title}</div>
-                <div class="search-item-info">UP主: ${video.author} · ${video.pubdate}</div>
-            </div>
-        </div>
-    `
-        )
-        .join('');
+    // 清空列表
+    searchList.textContent = '';
+
+    // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+    videos.forEach((video) => {
+        const item = document.createElement('div');
+        item.className = 'search-item video-item';
+        item.dataset.bvid = video.bvid;
+        item.dataset.mid = video.mid;
+        item.dataset.author = video.author;
+
+        const cover = document.createElement('div');
+        cover.className = 'search-item-cover';
+        const img = document.createElement('img');
+        img.src = video.pic;
+        img.alt = video.title;
+        img.onerror = function() { this.style.display = 'none'; };
+        cover.appendChild(img);
+
+        const content = document.createElement('div');
+        content.className = 'search-item-content';
+
+        const title = document.createElement('div');
+        title.className = 'search-item-title';
+        title.textContent = video.title;
+
+        const info = document.createElement('div');
+        info.className = 'search-item-info';
+        info.textContent = `UP主: ${video.author} · ${video.pubdate}`;
+
+        content.appendChild(title);
+        content.appendChild(info);
+
+        item.appendChild(cover);
+        item.appendChild(content);
+        searchList.appendChild(item);
+    });
 
     // 绑定点击事件
     searchList.querySelectorAll('.video-item').forEach((item) => {
@@ -882,29 +941,50 @@ function displaySearchResults(results, youtubeVideoId) {
 
     if (results.length === 0) {
         searchStatus.textContent = '未找到匹配的视频';
-        searchList.innerHTML = '';
+        searchList.textContent = '';
     } else if (results.length === 1) {
         searchStatus.textContent = '找到1个匹配视频，正在自动下载弹幕...';
-        searchList.innerHTML = '';
+        searchList.textContent = '';
         // 自动下载单个结果（也会自动关闭）
         downloadDanmakuFromBV(results[0].bvid, youtubeVideoId);
     } else {
         searchStatus.textContent = `找到${results.length}个匹配视频，请选择：`;
-        searchList.innerHTML = results
-            .map(
-                (video, index) => `
-            <div class="search-item" data-bvid="${video.bvid}">
-                <div class="search-item-cover">
-                    <img src="${video.pic || ''}" alt="视频封面" onerror="this.style.display='none'">
-                </div>
-                <div class="search-item-content">
-                    <div class="search-item-title">${video.title}</div>
-                    <div class="search-item-info">发布: ${video.pubdate}</div>
-                </div>
-            </div>
-        `
-            )
-            .join('');
+
+        // 清空列表
+        searchList.textContent = '';
+
+        // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+        results.forEach((video) => {
+            const item = document.createElement('div');
+            item.className = 'search-item';
+            item.dataset.bvid = video.bvid;
+
+            const cover = document.createElement('div');
+            cover.className = 'search-item-cover';
+            const img = document.createElement('img');
+            img.src = video.pic || '';
+            img.alt = '视频封面';
+            img.onerror = function() { this.style.display = 'none'; };
+            cover.appendChild(img);
+
+            const content = document.createElement('div');
+            content.className = 'search-item-content';
+
+            const title = document.createElement('div');
+            title.className = 'search-item-title';
+            title.textContent = video.title;
+
+            const info = document.createElement('div');
+            info.className = 'search-item-info';
+            info.textContent = `发布: ${video.pubdate}`;
+
+            content.appendChild(title);
+            content.appendChild(info);
+
+            item.appendChild(cover);
+            item.appendChild(content);
+            searchList.appendChild(item);
+        });
 
         // 绑定点击事件
         searchList.querySelectorAll('.search-item').forEach((item) => {
@@ -1013,23 +1093,32 @@ function displayBangumiInterface(pageInfo) {
 
     if (parseResult.isValid) {
         // 解析成功：显示完整信息和更新按钮
-        bangumiSection.innerHTML = `
-            <div class="association-header">
-                <h3>BillBili 原创番剧-《${parseResult.title}》-第${parseResult.episode}话</h3>
-            </div>
-            <div class="input-group">
-                <div class="button-group">
-                    <button id="update-bangumi-btn" style="background-color: #fb7299;">更新弹幕</button>
-                </div>
-            </div>
-        `;
+        // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+        const header = document.createElement('div');
+        header.className = 'association-header';
+        const h3 = document.createElement('h3');
+        h3.textContent = `BillBili 原创番剧-《${parseResult.title}》-第${parseResult.episode}话`;
+        header.appendChild(h3);
+
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group';
+        const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'button-group';
+        const updateButton = document.createElement('button');
+        updateButton.id = 'update-bangumi-btn';
+        updateButton.style.backgroundColor = '#fb7299';
+        updateButton.textContent = '更新弹幕';
+        buttonGroup.appendChild(updateButton);
+        inputGroup.appendChild(buttonGroup);
+
+        bangumiSection.appendChild(header);
+        bangumiSection.appendChild(inputGroup);
 
         // 插入到频道信息后面
         const channelInfo = document.getElementById('channel-info');
         channelInfo.parentNode.insertBefore(bangumiSection, channelInfo.nextSibling);
 
         // 绑定按钮事件和悬停效果
-        const updateButton = document.getElementById('update-bangumi-btn');
         updateButton.onclick = () =>
             downloadBangumiDanmakuFromUI(parseResult.title, parseResult.episode, pageInfo.videoId);
 
@@ -1042,11 +1131,12 @@ function displayBangumiInterface(pageInfo) {
         };
     } else {
         // 解析失败：只显示标题，无按钮
-        bangumiSection.innerHTML = `
-            <div class="association-header">
-                <h3>未识别到番剧正片</h3>
-            </div>
-        `;
+        const header = document.createElement('div');
+        header.className = 'association-header';
+        const h3 = document.createElement('h3');
+        h3.textContent = '未识别到番剧正片';
+        header.appendChild(h3);
+        bangumiSection.appendChild(header);
 
         // 插入到频道信息后面
         const channelInfo = document.getElementById('channel-info');
@@ -1295,18 +1385,30 @@ async function refreshPageInfo() {
     const refreshBtn = document.getElementById('refresh-btn');
     if (!refreshBtn) return;
 
-    const originalText = refreshBtn.innerHTML;
+    const originalHTML = refreshBtn.innerHTML;
     const originalTitle = refreshBtn.title;
 
     // 设置按钮为刷新中状态
     refreshBtn.disabled = true;
     refreshBtn.title = '刷新中...';
-    refreshBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spinning">
-            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-        </svg>
-        刷新中...
-    `;
+
+    // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+    refreshBtn.textContent = '';
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('class', 'spinning');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2');
+    svg.appendChild(path);
+    refreshBtn.appendChild(svg);
+    refreshBtn.appendChild(document.createTextNode(' 刷新中...'));
 
     try {
         showStatus('正在刷新页面信息...', 'loading');
@@ -1365,7 +1467,7 @@ async function refreshPageInfo() {
         // 恢复按钮状态
         refreshBtn.disabled = false;
         refreshBtn.title = originalTitle;
-        refreshBtn.innerHTML = originalText;
+        refreshBtn.innerHTML = originalHTML;
 
         // 3秒后隐藏状态消息
         setTimeout(() => {
@@ -1385,19 +1487,31 @@ function showPageInfoRefreshButton() {
     // 检查是否已经有刷新按钮
     if (document.getElementById('refresh-page-info-btn')) return;
 
-    channelInfoDiv.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <p style="color: #666; margin-bottom: 10px;">无法获取当前页面信息</p>
-            <button id="refresh-page-info-btn" style="
-                background-color: #ff4444; 
-                color: white; 
-                border: none; 
-                padding: 8px 16px; 
-                border-radius: 4px; 
-                cursor: pointer;
-            ">刷新页面信息</button>
-        </div>
-    `;
+    // 使用 DOM API 创建元素，避免 innerHTML 安全问题
+    channelInfoDiv.textContent = '';
+
+    const container = document.createElement('div');
+    container.style.textAlign = 'center';
+    container.style.padding = '20px';
+
+    const message = document.createElement('p');
+    message.style.color = '#666';
+    message.style.marginBottom = '10px';
+    message.textContent = '无法获取当前页面信息';
+
+    const button = document.createElement('button');
+    button.id = 'refresh-page-info-btn';
+    button.style.backgroundColor = '#ff4444';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.padding = '8px 16px';
+    button.style.borderRadius = '4px';
+    button.style.cursor = 'pointer';
+    button.textContent = '刷新页面信息';
+
+    container.appendChild(message);
+    container.appendChild(button);
+    channelInfoDiv.appendChild(container);
 
     // 绑定刷新事件
     document.getElementById('refresh-page-info-btn').addEventListener('click', async () => {
