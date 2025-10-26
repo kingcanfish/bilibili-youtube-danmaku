@@ -23,16 +23,19 @@
 0. 安装本插件,并确保您已登录 B 站
 1. 打开你在 YouTube 上观看的对应视频
 2.1 热门UP主可以自动匹配，无需设置
-   2.2 手动搜索可绑定 UP 主B 站空间
-      2.3 也可以手动输入 B 站原视频链接。
+    2.2 手动搜索可绑定 UP 主B 站空间
+       2.3 也可以手动输入 B 站原视频链接。
 3. 弹幕将在播放时自动显示在视频上方
 4. 可根据需要调节字体大小、透明度、轨道间距、滚动速度等显示参数
+5. 点击刷新按钮可以重新获取页面信息和弹幕数据
 
 ## ✨ 特色功能
 
 - **自动匹配：** 公共匹配库存在数据，或手动绑定 UP 主后，播放该 YouTube 频道的任意视频时，会自动匹配并加载对应 B 站视频的弹幕，无需每次手动输入链接。（未匹配到的视频可以手动匹配）
 - **实时更新：** 绑定 UP 主后，打开任意视频时，会更新最新弹幕内容。
-- **番剧支持：** “哔哩哔哩动画Anime Made By Bilibili ” 频道下的番剧正片，可自动获取弹幕（无需配置）
+- **番剧支持：** "哔哩哔哩动画Anime Made By Bilibili " 频道下的番剧正片，可自动获取弹幕（无需配置）
+- **页面刷新：** 点击刷新按钮可以重新获取页面信息、清除缓存并重新检查弹幕数据
+- **多数据源：** 频道关联数据支持多个远程数据源获取，提供更稳定的数据服务
 
 🎉欢迎贡献UP主匹配信息🎉
 
@@ -48,19 +51,8 @@
 
 ## 📦 安装方式
 
-### Chrome 应用商店版本（推荐）
-
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/dmkbhbnbpfijhgpnfahfioedledohfja.svg)](https://chromewebstore.google.com/detail/b2y-youtube-%E5%90%8C%E6%AD%A5%E6%98%BE%E7%A4%BA-bilibili/dmkbhbnbpfijhgpnfahfioedledohfja)
-
-**[🚀 点击前往 Chrome 应用商店安装](https://chromewebstore.google.com/detail/b2y-youtube-%E5%90%8C%E6%AD%A5%E6%98%BE%E7%A4%BA-bilibili/dmkbhbnbpfijhgpnfahfioedledohfja)**
-
-1. 打开上方链接
-2. 点击"添加至 Chrome"按钮
-3. 确认安装即可使用
 
 ### Firefox 商店版本
-
-[![Firefox Addons](https://img.shields.io/amo/v/b2y-youtube-同步显示-bilibili-弹幕.svg)](https://addons.mozilla.org/zh-CN/firefox/addon/b2y-youtube-%E5%90%8C%E6%AD%A5%E6%98%BE%E7%A4%BA-bilibili-%E5%BC%B9%E5%B9%95/)
 
 **[🦊 点击前往 Firefox 附加组件商店安装](https://addons.mozilla.org/zh-CN/firefox/addon/b2y-youtube-%E5%90%8C%E6%AD%A5%E6%98%BE%E7%A4%BA-bilibili-%E5%BC%B9%E5%B9%95/)**
 
@@ -68,15 +60,7 @@
 2. 点击"添加到 Firefox"按钮
 3. 确认安装即可使用
 
-### Edge 
-
-建议安装Chrome 商店版本
-
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/dmkbhbnbpfijhgpnfahfioedledohfja.svg)](https://chromewebstore.google.com/detail/b2y-youtube-%E5%90%8C%E6%AD%A5%E6%98%BE%E7%A4%BA-bilibili/dmkbhbnbpfijhgpnfahfioedledohfja)
-
-**[🚀 点击前往 Chrome 应用商店安装](https://chromewebstore.google.com/detail/b2y-youtube-%E5%90%8C%E6%AD%A5%E6%98%BE%E7%A4%BA-bilibili/dmkbhbnbpfijhgpnfahfioedledohfja)**
-
-### Safari
+### Safari && Chrome && Edge
 
 暂未上架，目前仍需手动安装
 
@@ -85,7 +69,7 @@
 
 > 💡 **注意：** 优先推荐使用应用商店版本，仅在无法访问时才使用手动安装。
 
-1. 前往本项目的 [Release 页面](https://github.com/ahaduoduoduo/bilibili-youtube-danmaku/releases) 下载最新版本对应的文件。
+1. 前往本项目的 [Release 页面](https://github.com/kingcanfish/bilibili-youtube-danmaku/releases) 下载最新版本对应的文件。
 
 #### 🌐 Chrome 浏览器
 - 下载 `B2Y-YouTube-Bilibili-Danmaku-vX.X.X-chrome.zip`
@@ -188,11 +172,18 @@ bilibili-youtube-danmaku/
 
 ## 📝 更新日志
 
+### 2025-10-26
+1.1.7
+- ✨ 移除了捐赠相关功能和链接，专注核心功能
+- ✨ 添加了页面信息刷新按钮，方便重新获取视频信息
+- ✨ 优化了频道关联数据获取，支持多个远程数据源
+- ✨ 简化了弹窗界面，移除了社交图标，界面更清爽
+
 ### 2025-08-19
 1.1.5
 - ✨ 优化了标题匹配功能
 - ✨ 优化了智能搜索时的关键词
-- ✨ 增加了广告片段弹幕自动跳过功能，感谢 @[BilibiliSponsorBlock项目](https://github.com/hanydd/BilibiliSponsorBlock) 
+- ✨ 增加了广告片段弹幕自动跳过功能，感谢 @[BilibiliSponsorBlock项目](https://github.com/hanydd/BilibiliSponsorBlock)
 
 ### 2025-08-19
 1.1.3
@@ -226,13 +217,20 @@ bilibili-youtube-danmaku/
 - ✨ 添加多语言标题自动匹配功能（https://github.com/ahaduoduoduo/bilibili-youtube-danmaku/pull/1 ，感谢 @[lemonteaau](https://github.com/lemonteaau) ）
 
 1.0.7
-- ✨ 支持 “哔哩哔哩动画Anime Made By Bilibili ” 频道自动获取原创番剧弹幕
+- ✨ 支持 "哔哩哔哩动画Anime Made By Bilibili " 频道自动获取原创番剧弹幕
 
 ### 2025-08-04
 1.0.6
 - ✨ 优化了视频标题匹配模式
 - ⚡ 提高了弹幕帧率
 
-### [☕️支持我～](https://github.com/ahaduoduoduo/bilibili-youtube-danmaku/blob/main/DONATE.md)
+## 🙏 致谢
 
-### [☕️看看我做的 Sora 去水印小工具](https://nosorawm.app/)
+特别感谢原作者 @[ahaduoduoduo](https://github.com/ahaduoduoduo) 创建了这个优秀的项目：[bilibili-youtube-danmaku](https://github.com/ahaduoduoduo/bilibili-youtube-danmaku)，让 YouTube 也能享受 B 站的弹幕氛围。
+
+
+
+同时感谢所有为项目做出贡献的开发者们
+
+感谢开源社区的支持和贡献！🎉
+

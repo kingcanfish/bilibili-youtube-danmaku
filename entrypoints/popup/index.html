@@ -11,18 +11,21 @@
         <div class="simple-container" id="simple-container" style="display: none">
             <div class="simple-content">
                 <h2>当前不是 Youtube 页面哦</h2>
-                <!-- 社交图标区域 -->
-                <div class="social-icons" id="social-icons-simple" style="display: none"></div>
                 <button id="open-youtube-btn" class="youtube-btn">打开 YouTube</button>
             </div>
         </div>
 
         <!-- 原有的完整功能界面 -->
         <div class="container" id="main-container">
-            <h1>B站弹幕 → YouTube</h1>
-
-            <!-- 社交图标区域 -->
-            <div class="social-icons" id="social-icons" style="display: none"></div>
+            <div class="header-container">
+                <h1>B站弹幕 → YouTube</h1>
+                <button id="refresh-btn" class="refresh-btn" title="刷新页面信息">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    刷新
+                </button>
+            </div>
 
             <!-- YouTube频道信息展示 -->
             <div class="channel-info" id="channel-info" style="display: none">

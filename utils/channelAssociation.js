@@ -6,8 +6,10 @@
 class ChannelAssociationManager {
     constructor() {
         this.STORAGE_KEY = 'channelMappings';
-        this.REMOTE_DB_URL =
-            'https://raw.githubusercontent.com/ahaduoduoduo/bilibili-youtube-danmaku/main/channel-associations.json';
+        this.REMOTE_DB_URLS = [
+            'https://raw.githubusercontent.com/ahaduoduoduo/bilibili-youtube-danmaku/main/channel-associations.json',
+            'https://raw.githubusercontent.com/kingcanfish/bilibili-youtube-danmaku/main/channel-associations.json'
+        ];
     }
 
     /**
@@ -230,37 +232,79 @@ class ChannelAssociationManager {
     }
 
     /**
-     * 从远程获取完整的关联数据库
+     * 从远程获取完整的关联数据库（支持多个数据源）
      * @returns {Promise<Object|null>} 远程数据或null
      */
     async fetchRemoteAssociations() {
-        try {
-            const response = await fetch(this.REMOTE_DB_URL, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json'
-                },
-                // 不缓存，每次都获取最新数据
-                cache: 'no-cache'
-            });
+        const allChannels = [];
+        const channelMap = new Map(); // 用于去重，优先使用第一个源的数据
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // 并行请求所有远程源
+        const results = await Promise.allSettled(
+            this.REMOTE_DB_URLS.map(async (url) => {
+                try {
+                    console.log(`正在从远程源获取数据: ${url}`);
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-cache'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+
+                    // 简单格式验证
+                    if (!data || !Array.isArray(data.channels)) {
+                        throw new Error('远程数据格式无效');
+                    }
+
+                    console.log(`远程源获取成功: ${url}，包含 ${data.channels.length} 个频道`);
+                    return { url, data };
+                } catch (error) {
+                    console.error(`远程源获取失败: ${url}`, error);
+                    throw error;
+                }
+            })
+        );
+
+        // 处理所有成功的结果
+        let successCount = 0;
+        for (const result of results) {
+            if (result.status === 'fulfilled') {
+                successCount++;
+                const { url, data } = result.value;
+
+                // 合并频道数据，去重（以第一个出现的为准）
+                for (const channel of data.channels) {
+                    if (!channelMap.has(channel.youtubeChannelId)) {
+                        channelMap.set(channel.youtubeChannelId, {
+                            ...channel,
+                            source: url // 记录数据来源
+                        });
+                    }
+                }
             }
-
-            const data = await response.json();
-
-            // 简单格式验证
-            if (!data || !Array.isArray(data.channels)) {
-                throw new Error('远程数据格式无效');
-            }
-
-            console.log(`远程关联库获取成功，包含 ${data.channels.length} 个频道`);
-            return data;
-        } catch (error) {
-            console.error('获取远程关联库失败:', error);
-            throw error;
         }
+
+        if (successCount === 0) {
+            throw new Error('所有远程源获取失败');
+        }
+
+        // 转换为数组
+        allChannels.push(...channelMap.values());
+
+        console.log(`远程关联库合并完成，共 ${allChannels.length} 个频道（来自 ${successCount}/${this.REMOTE_DB_URLS.length} 个源）`);
+
+        return {
+            channels: allChannels,
+            sources: this.REMOTE_DB_URLS.slice(0, successCount),
+            totalSources: this.REMOTE_DB_URLS.length
+        };
     }
 
     /**

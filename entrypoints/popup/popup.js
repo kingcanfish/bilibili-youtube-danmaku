@@ -19,104 +19,7 @@ function getYouTubeVideoId(url) {
     return match ? match[1] : null;
 }
 
-// 加载社交图标配置
-async function loadSocialIconsConfig() {
-    try {
-        // 默认配置（作为fallback）
-        const defaultConfig = {
-            enableGrayscaleFilter: false,
-            socialLinks: []
-        };
-
-        // 可以在这里添加远程配置URL
-        const configUrl =
-            'https://raw.githubusercontent.com/ahaduoduoduo/bilibili-youtube-danmaku/refs/heads/main/social-config.json'; // 例如: 'https://example.com/social-config.json'
-
-        if (configUrl) {
-            try {
-                const response = await fetch(configUrl);
-                if (response.ok) {
-                    const config = await response.json();
-                    return config;
-                }
-            } catch (error) {
-                console.log('远程配置加载失败，使用默认配置:', error);
-            }
-        }
-
-        return defaultConfig;
-    } catch (error) {
-        console.error('加载社交图标配置失败:', error);
-        return { enableGrayscaleFilter: false, socialLinks: [] };
-    }
-}
-
-// 渲染社交图标
-function renderSocialIcons(config) {
-    const socialIconsContainer = document.getElementById('social-icons');
-    const socialIconsSimpleContainer = document.getElementById('social-icons-simple');
-
-    const containers = [socialIconsContainer, socialIconsSimpleContainer].filter(Boolean);
-
-    if (!config || !config.socialLinks || config.socialLinks.length === 0) {
-        containers.forEach((container) => {
-            container.style.display = 'none';
-        });
-        return;
-    }
-
-    containers.forEach((container) => {
-        // 清空容器
-        container.innerHTML = '';
-
-        // 应用滤镜设置
-        if (config.enableGrayscaleFilter) {
-            container.classList.add('grayscale-filter');
-        } else {
-            container.classList.remove('grayscale-filter');
-        }
-
-        // 渲染每个图标
-        config.socialLinks.forEach((link) => {
-            const iconElement = document.createElement('div');
-            iconElement.className = 'social-icon';
-            const tooltipText = link.tooltip || link.name;
-            iconElement.setAttribute('data-tooltip', tooltipText);
-
-            const imgElement = document.createElement('img');
-            imgElement.src = link.icon;
-            imgElement.alt = link.name;
-            imgElement.onerror = () => {
-                // 如果图片加载失败，隐藏该图标
-                iconElement.style.display = 'none';
-            };
-
-            iconElement.appendChild(imgElement);
-
-            // 添加点击事件
-            iconElement.addEventListener('click', () => {
-                if (link.url) {
-                    browser.tabs.create({ url: link.url });
-                }
-            });
-
-            container.appendChild(iconElement);
-        });
-
-        // 显示容器
-        container.style.display = 'flex';
-    });
-}
-
-// 初始化社交图标
-async function initSocialIcons() {
-    try {
-        const config = await loadSocialIconsConfig();
-        renderSocialIcons(config);
-    } catch (error) {
-        console.error('初始化社交图标失败:', error);
-    }
-}
+// 社交图标相关代码已删除
 
 // 显示状态信息
 function showStatus(message, type = 'loading') {
@@ -1366,17 +1269,111 @@ async function checkPageTypeAndToggleUI() {
 
     const simpleContainer = document.getElementById('simple-container');
     const mainContainer = document.getElementById('main-container');
+    const refreshBtn = document.getElementById('refresh-btn');
 
     if (isYouTubePage) {
         // 是YouTube页面，显示完整功能界面
         mainContainer.style.display = 'block';
         simpleContainer.style.display = 'none';
+        if (refreshBtn) {
+            refreshBtn.style.display = 'flex';
+        }
         return true;
     } else {
         // 不是YouTube页面，显示简化界面
         mainContainer.style.display = 'none';
         simpleContainer.style.display = 'block';
+        if (refreshBtn) {
+            refreshBtn.style.display = 'none';
+        }
         return false;
+    }
+}
+
+// 刷新页面信息功能
+async function refreshPageInfo() {
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (!refreshBtn) return;
+
+    const originalText = refreshBtn.innerHTML;
+    const originalTitle = refreshBtn.title;
+
+    // 设置按钮为刷新中状态
+    refreshBtn.disabled = true;
+    refreshBtn.title = '刷新中...';
+    refreshBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spinning">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+        刷新中...
+    `;
+
+    try {
+        showStatus('正在刷新页面信息...', 'loading');
+
+        // 获取当前标签页信息
+        const tab = await getCurrentTab();
+        if (!tab || !tab.url.includes('youtube.com/watch')) {
+            showStatus('请在YouTube视频页面使用', 'error');
+            return;
+        }
+
+        // 1. 清除background缓存
+        try {
+            await browser.runtime.sendMessage({
+                type: 'clearTabCache',
+                tabId: tab.id
+            });
+        } catch (error) {
+            console.warn('清除background缓存失败:', error);
+        }
+
+        // 2. 清除本地存储的待处理结果
+        await browser.storage.local.remove(['pendingNoMatchResults', 'pendingSearchResults']);
+
+        // 3. 强制重新获取页面信息（不使用缓存）
+        const pageInfo = await getPageInfo(false);
+
+        if (pageInfo) {
+            // 4. 重新显示频道信息和关联状态
+            displayChannelInfo(pageInfo);
+
+            // 5. 重新检查弹幕数据
+            await checkCurrentPageDanmaku();
+
+            // 6. 如果是普通频道，重新检查关联状态
+            if (pageInfo.channel.success) {
+                const isBangumiChannel = pageInfo.channel.channelId === '@MadeByBilibili'
+                    || pageInfo.channel.channelName === 'MadeByBilibili';
+
+                if (!isBangumiChannel) {
+                    await checkAssociation(pageInfo.channel.channelId);
+                }
+            }
+
+            showStatus('页面信息已刷新', 'success');
+        } else {
+            showPageInfoRefreshButton();
+            showStatus('无法获取页面信息，请稍后重试', 'error');
+        }
+
+    } catch (error) {
+        console.error('刷新页面信息失败:', error);
+        showStatus('刷新失败: ' + error.message, 'error');
+        showPageInfoRefreshButton();
+    } finally {
+        // 恢复按钮状态
+        refreshBtn.disabled = false;
+        refreshBtn.title = originalTitle;
+        refreshBtn.innerHTML = originalText;
+
+        // 3秒后隐藏状态消息
+        setTimeout(() => {
+            const statusBar = document.getElementById('status-bar');
+            if (statusBar) {
+                statusBar.classList.remove('show');
+            }
+        }, 3000);
     }
 }
 
@@ -1443,11 +1440,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 首先检查页面类型并切换界面
     const isYouTubePage = await checkPageTypeAndToggleUI();
 
-    // 初始化社交图标（无论是否为YouTube页面都显示）
-    await initSocialIcons();
-
     // 绑定YouTube按钮事件
     document.getElementById('open-youtube-btn').addEventListener('click', openYouTube);
+
 
     // 如果不是YouTube页面，不需要执行后续的初始化逻辑
     if (!isYouTubePage) {
@@ -1476,6 +1471,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('unassociate-btn').addEventListener('click', unassociateUploader);
     document.getElementById('auto-search-btn').addEventListener('click', autoSearchDanmaku);
     document.getElementById('smart-search-btn').addEventListener('click', smartSearchAndAssociate);
+    document.getElementById('refresh-btn').addEventListener('click', refreshPageInfo);
+
 
     // 设置变更事件
     document.getElementById('enable-danmaku').addEventListener('change', saveSettings);
